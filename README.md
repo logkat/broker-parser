@@ -8,6 +8,8 @@ A robust, standalone TypeScript library for parsing transaction CSV exports from
 - **Normalization**: Unifies transaction types (BUY, SELL, DIVIDEND, etc.) across brokers.
 - **Currency Handling**: Extracts account currency, native currency, and exchange rates.
 - **ISIN Extraction**: Reliably finds ISIN codes for accurate instrument identification.
+- **Export Support**: Convert parsed transactions into formats like Yahoo Finance CSV.
+- **Data Enrichment**: Helper utilities to resolve Tickers (e.g. from ISIN) before export.
 - **Type Safe**: Written in TypeScript with full type definitions.
 
 ## Supported Brokers
@@ -76,6 +78,43 @@ import { identifyAccounts } from "@logkat/broker-parser";
 
 const accounts = identifyAccounts(allRows);
 // Returns: [{ id: '12345', name: 'My ISK', count: 50 }, ...]
+```
+
+### Exporting Data
+
+You can export normalized transactions to various formats (e.g., for importing into other tools).
+
+```typescript
+import { YahooFinanceExporter } from "@logkat/broker-parser";
+
+// Convert transactions to Yahoo Finance CSV
+const result = YahooFinanceExporter.export(parsedTransactions);
+console.log(result.content); // CSV string
+```
+
+### Enriching Data (Tickers)
+
+Brokers outputs (Avanza/Nordnet) often lack the actual Ticker Symbol required by Yahoo Finance (they provide ISIN or Name instead).
+To fix this, you can use `enrichTransactions` with your own resolver logic (e.g., using `yahoo-finance2`).
+
+```typescript
+import {
+  enrichTransactions,
+  YahooFinanceExporter,
+} from "@logkat/broker-parser";
+
+// Your custom resolver (could check a DB or call an API)
+const myResolver = async (isin: string, name: string) => {
+  if (isin === "US0378331005") return "AAPL";
+  // ... call external API ...
+  return null;
+};
+
+// 1. Parse
+// 2. Enrich
+const enriched = await enrichTransactions(parsedTransactions, myResolver);
+// 3. Export
+const csv = YahooFinanceExporter.export(enriched);
 ```
 
 ## API Reference

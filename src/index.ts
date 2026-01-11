@@ -10,6 +10,7 @@ export { parseNumber, normalizeType };
 import { YahooFinanceExporter } from './exporters/yahoo';
 export * from './exporters/types';
 export { YahooFinanceExporter };
+export * from './enricher';
 
 export function getParsers(): Record<string, BrokerParser> {
     return {
