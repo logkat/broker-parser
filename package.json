@@ -37,7 +37,8 @@
     "lint": "eslint ."
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com/"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

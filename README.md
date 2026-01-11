@@ -18,6 +18,14 @@ A robust, standalone TypeScript library for parsing transaction CSV exports from
 
 ## Installation
 
+To install from GitHub Packages, you need to configure your `.npmrc` file:
+
+```bash
+echo "@logkat:registry=https://npm.pkg.github.com" >> .npmrc
+```
+
+Then install the package:
+
 ```bash
 npm install @logkat/broker-parser
 # or
