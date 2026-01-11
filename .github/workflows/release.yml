@@ -48,7 +48,13 @@ jobs:
 
       - name: Publish to GitHub Packages
         run: |
-          pnpm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
           pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create v$VERSION --generate-notes

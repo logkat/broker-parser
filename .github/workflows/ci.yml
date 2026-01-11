@@ -32,7 +32,7 @@ jobs:
 
           # Get versions
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          OLD_VERSION=$(git show main:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version")
+          OLD_VERSION=$(git show main:package.json | node -p "JSON.parse(require('fs').readFileSync(0).toString()).version")
 
           if [ "$CURRENT_VERSION" != "$OLD_VERSION" ]; then
             echo "Version bumped from $OLD_VERSION to $CURRENT_VERSION"
