@@ -1,3 +1,0 @@
-Datum,Konto,Typ av transaktion,Värdepapper/beskrivning,Antal,Kurs,Avgift,Belopp,Valuta,ISIN
-2024-01-01,ISK,Köp,AAPL,10,150,1,1501,USD,US0378331005
-2024-01-02,ISK,Sälj,AAPL,5,160,1,799,USD,US0378331005

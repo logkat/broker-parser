@@ -27,3 +27,5 @@ __snapshots__
 
 # Turborepo
 .turbo
+
+/transactions
