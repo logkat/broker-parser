@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths-ignore:
-      - "**.md"
-      - ".gitignore"
+      - '**.md'
+      - '.gitignore'
 
 permissions:
   contents: write # to be able to publish a GitHub release
@@ -31,8 +31,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
 

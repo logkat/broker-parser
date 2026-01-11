@@ -1,6 +1,6 @@
 {
   "name": "@logkat/broker-parser",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A robust, standalone TypeScript library for parsing transaction CSV exports from various stock brokers.",
   "keywords": [
     "broker",
@@ -26,6 +26,9 @@
   "homepage": "https://github.com/logkat/broker-parser#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "broker-parser": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -34,10 +37,13 @@
   },
   "scripts": {
     "build": "tsc",
+    "watch": "tsc -w",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "publishConfig": {
     "access": "public",
@@ -46,10 +52,17 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/node": "^22.0.0",
+    "@types/papaparse": "^5.5.2",
     "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^9.0.0",
+    "prettier": "^3.4.2",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "1.6.1"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "papaparse": "^5.5.3",
+    "yahoo-finance2": "^3.11.2"
   }
 }

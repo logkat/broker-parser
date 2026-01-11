@@ -1,0 +1,6 @@
+Datum,Konto,Typ av transaktion,Värdepapper/beskrivning,Antal,Kurs,Belopp,Transaktionsvaluta,Instrumentvaluta,ISIN,Courtage,Valutakurs
+2025-12-26,Pension,Köp,Meta Platforms A,1,"666,89","-6129,85",SEK,USD,US30303M1027,"15,31","9,168745"
+2025-12-29,Pension,Utdelning,Meta Platforms A,10,"0,525","48,1",SEK,USD,US30303M1027,,
+2025-12-30,Pension,Sälj,Meta Platforms A,-5,700,35000,SEK,USD,US30303M1027,15,10
+2023-03-10,Pension,Byte,DNB Fund Technology A SEK Acc,0,1649,,,,,LU2553959045,,
+2023-03-10,Pension,Byte,DNB TECHNOLOGY,-0,1649,,,,,LU0302296495,,

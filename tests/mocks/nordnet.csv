@@ -1,0 +1,3 @@
+Bokföringsdag,Transaktionstyp,Instrument,Antal,Kurs,Total Avgift,Valuta,Belopp,Valuta,Inköpsvärde,Valuta,Växlingskurs,ISIN
+2025-12-04,KÖPT,Netflix,50,"102,98","121,43",SEK,"-48694,8",SEK,"5161,87",USD,"9,4335",US64110L1061
+2025-12-05,SÅLT,Netflix,-10,105,,SEK,10000,SEK,,,,

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
   test:
@@ -17,13 +17,19 @@ jobs:
           version: 9
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run type-check
-      - run: pnpm run lint
-      - run: pnpm run test:coverage
-      - run: pnpm run build
+      - name: Check code formatting
+        run: pnpm run format:check
+      - name: Type check
+        run: pnpm run type-check
+      - name: Lint
+        run: pnpm run lint
+      - name: Build
+        run: pnpm run build
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
       - name: Verify Changelog on Version Change
         if: github.event_name == 'pull_request'
         run: |
