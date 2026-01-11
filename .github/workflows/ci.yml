@@ -22,5 +22,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run type-check
       - run: pnpm run lint
-      - run: pnpm test
+      - run: pnpm run test:coverage
       - run: pnpm run build
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
