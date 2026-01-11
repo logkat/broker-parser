@@ -284,16 +284,46 @@ We welcome contributions! To add support for a new broker:
 ## Development & Testing
 
 1.  **Install Dependencies**:
+
     ```bash
     pnpm install
     ```
-2.  **Run Tests**:
+
+2.  **Run Quality Checks**:
+
     ```bash
-    pnpm test
+    # Format code
+    pnpm format
+
+    # Check formatting
+    pnpm format:check
+
+    # Type check
+    pnpm type-check
+
+    # Lint
+    pnpm lint
     ```
-3.  **Build**:
+
+3.  **Run Tests**:
+
+    ```bash
+    # Run tests in watch mode
+    pnpm test
+
+    # Run tests with coverage
+    pnpm test:coverage
+    ```
+
+4.  **Build**:
+
     ```bash
     pnpm build
+    ```
+
+5.  **Run All Checks** (same as CI):
+    ```bash
+    pnpm format:check && pnpm type-check && pnpm lint && pnpm build && pnpm test:coverage
     ```
 
 ## License

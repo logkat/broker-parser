@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `tests/file_resolver_extended.test.ts`: All file format variations
   - `tests/resolvers/yahoo.test.ts`: Complete Yahoo resolver coverage
   - Achieved 95%+ code coverage on resolvers and enrichment logic
+- **CI/CD Enhancements**:
+  - Added Prettier formatting check to CI pipeline
+  - Reorganized CI steps for fail-fast approach (format → type-check → lint → build → test)
+  - All quality gates now enforced automatically on every PR and push
 
 ### Changed
 
