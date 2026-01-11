@@ -38,9 +38,17 @@ jobs:
 
       - run: pnpm run build
 
-      - name: Release
+      - name: Verify Changelog
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if ! grep -q "\\[$VERSION\\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md missing entry for version $VERSION"
+            exit 1
+          fi
+
+      - name: Publish to GitHub Packages
+        run: |
+          pnpm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          pnpm publish --no-git-checks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_REGISTRY: https://npm.pkg.github.com/
-        run: npx semantic-release
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

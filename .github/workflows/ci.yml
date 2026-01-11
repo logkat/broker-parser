@@ -24,6 +24,24 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run test:coverage
       - run: pnpm run build
+      - name: Verify Changelog on Version Change
+        if: github.event_name == 'pull_request'
+        run: |
+          # Fetch main branch to compare
+          git fetch origin main:main
+
+          # Get versions
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          OLD_VERSION=$(git show main:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version")
+
+          if [ "$CURRENT_VERSION" != "$OLD_VERSION" ]; then
+            echo "Version bumped from $OLD_VERSION to $CURRENT_VERSION"
+            if ! grep -q "\\[$CURRENT_VERSION\\]" CHANGELOG.md; then
+              echo "::error::Version bumped but CHANGELOG.md missing entry for version $CURRENT_VERSION"
+              exit 1
+            fi
+            echo "Changelog entry found for $CURRENT_VERSION"
+          fi
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
