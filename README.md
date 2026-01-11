@@ -39,59 +39,60 @@ pnpm add @logkat/broker-parser
 
 ### CLI Usage
 
-You can also use the library directly from your terminal to convert broker CSVs to other formats (e.g. Yahoo Finance) and automatically resolve tickers.
+The library provides a powerful CLI for bulk processing and ticker resolution.
 
 ```bash
-# Basic export
+# Basic export (defaults to Yahoo resolution)
 broker-parser export input.csv -o output.csv
 
-# Export with automatic Yahoo Finance ticker resolution and caching
-broker-parser export input.csv --yahoo --cache .tickers.json
+# Specific resolvers (stacked in order)
+broker-parser export input.csv --ticker-file custom.json --yahoo
 
-# Use a local mapping file for tickers (supports JSON and CSV)
-broker-parser export input.csv --ticker-file my-tickers.json
+# Control over resolution strategies
+broker-parser export input.csv --yahoo-isin --yahoo-name
 ```
+
+| Flag             | Description                                              |
+| ---------------- | -------------------------------------------------------- |
+| `--yahoo`        | Use both ISIN and Name search (Default: true)            |
+| `--yahoo-isin`   | Trigger only ISIN-based search                           |
+| `--yahoo-name`   | Trigger only Name-based search (fuzzy matching)          |
+| `--ticker-file`  | Use a local JSON/CSV mapping file (priority)             |
+| `--no-yahoo`     | Disable all automatic lookups                            |
+| `--cache <path>` | Path to resolution cache (Default: `.ticker-cache.json`) |
 
 ## Usage
 
 ### Library Usage (TypeScript)
 
-### Parsing a Single Transaction
+### Parsing transactions
 
 ```typescript
 import { parseTransaction } from '@logkat/broker-parser';
 
-const row = {
-  'Typ av transaktion': 'Köp',
-  'Värdepapper/beskrivning': 'Apple Inc',
-  Antal: '10',
-  Kurs: '150',
-  Belopp: '-1500',
-  Transaktionsvaluta: 'USD',
-};
-
 const transaction = parseTransaction(row);
 ```
 
-### Automatic Ticker Resolution
+### Advanced Ticker Resolution
 
-The library provides built-in resolvers for Yahoo Finance and local files.
+The library and CLI support "stacked" resolvers. You can prioritize local data and then fall back to various cloud providers.
 
 ```typescript
 import {
   enrichTransactions,
-  YahooTickerResolver,
+  YahooISINResolver,
+  YahooNameResolver,
+  FileTickerResolver,
   LocalFileTickerCache,
 } from '@logkat/broker-parser';
 
-// 1. Setup resolver and optional persistent cache
-const resolver = new YahooTickerResolver();
-const cache = new LocalFileTickerCache('./ticker-cache.json');
-
-// 2. Enrich your parsed transactions
-const enriched = await enrichTransactions(parsedTransactions, {
-  resolver,
-  cache,
+const enriched = await enrichTransactions(transactions, {
+  resolvers: [
+    new FileTickerResolver('./manual-mapping.json'),
+    new YahooISINResolver(),
+    new YahooNameResolver(),
+  ],
+  cache: new LocalFileTickerCache('./cache.json'),
 });
 ```
 

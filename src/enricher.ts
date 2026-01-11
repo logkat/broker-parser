@@ -6,6 +6,7 @@ export type TickerResolution = {
 };
 
 export interface TickerResolver {
+  name: string;
   resolve(isin: string, symbol: string): Promise<TickerResolution>;
 }
 
@@ -15,23 +16,33 @@ export interface TickerCache {
 }
 
 export interface EnrichmentOptions {
-  resolver: TickerResolver;
+  resolvers: TickerResolver[];
   cache?: TickerCache;
   /**
    * If true, will not attempt to resolve if a ticker is already present.
    * Default: true
    */
   skipIfPresent?: boolean;
+  /**
+   * If true, will stop trying resolvers for a transaction once one returns a ticker.
+   * Default: true
+   */
+  stopOnFirstMatch?: boolean;
 }
 
 /**
- * Enriches transactions by resolving tickers using a provided resolver and optional cache.
+ * Enriches transactions by resolving tickers using one or more resolvers in sequence.
  */
 export async function enrichTransactions(
   transactions: ParsedTransaction[],
   options: EnrichmentOptions
 ): Promise<ParsedTransaction[]> {
-  const { resolver, cache, skipIfPresent = true } = options;
+  const {
+    resolvers,
+    cache,
+    skipIfPresent = true,
+    stopOnFirstMatch = true,
+  } = options;
   const enriched: ParsedTransaction[] = [];
 
   for (const t of transactions) {
@@ -48,27 +59,34 @@ export async function enrichTransactions(
 
     let resolution: TickerResolution | undefined;
 
+    // 1. Check Cache
     if (cache) {
       resolution = await cache.get(key);
     }
 
-    if (!resolution) {
-      try {
-        resolution = await resolver.resolve(t.isin || '', t.symbol);
-        if (cache && resolution) {
-          await cache.set(key, resolution);
+    // 2. Run Resolvers
+    if (!resolution || !resolution.ticker) {
+      for (const resolver of resolvers) {
+        try {
+          const res = await resolver.resolve(t.isin || '', t.symbol);
+          if (res && res.ticker) {
+            resolution = res;
+            if (stopOnFirstMatch) break;
+          }
+        } catch (e) {
+          console.warn(`Resolver ${resolver.name} failed for ${key}`, e);
         }
-      } catch (e) {
-        console.warn(`Failed to resolve ticker for ${key}`, e);
-        resolution = { ticker: null };
       }
+    }
+
+    // 3. Update Cache if we found something new
+    if (cache && resolution && resolution.ticker) {
+      await cache.set(key, resolution);
     }
 
     enriched.push({
       ...t,
-      ticker: resolution.ticker || t.ticker,
-      // If the resolver found a currency, we could potentially update it too
-      // 但 ParsedTransaction has multiple currency fields.
+      ticker: resolution?.ticker || t.ticker,
     });
   }
 

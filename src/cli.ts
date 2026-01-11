@@ -7,7 +7,8 @@ import {
   parseTransaction,
   YahooFinanceExporter,
   enrichTransactions,
-  YahooTickerResolver,
+  YahooISINResolver,
+  YahooNameResolver,
   FileTickerResolver,
   LocalFileTickerCache,
 } from './index';
@@ -31,7 +32,13 @@ program
   )
   .option('-e, --exporter <exporter>', 'Exporter to use (yahoo)', 'yahoo')
   .option('-o, --output <path>', 'Output file path')
-  .option('--yahoo', 'Use Yahoo Finance for ticker resolution', false)
+  .option(
+    '--yahoo',
+    'Use Yahoo Finance (ISIN + Name) for ticker resolution (default)',
+    true
+  )
+  .option('--yahoo-isin', 'Use Yahoo Finance ISIN search', false)
+  .option('--yahoo-name', 'Use Yahoo Finance name search', false)
   .option(
     '--ticker-file <path>',
     'Path to a JSON or CSV file for ticker resolution'
@@ -41,6 +48,7 @@ program
     'Path to a local JSON file for caching ticker resolutions',
     '.ticker-cache.json'
   )
+  .option('--no-yahoo', 'Disable automatic Yahoo Finance resolution')
   .option('--no-cache', 'Disable caching')
   .action(async (file, options) => {
     const filePath = path.resolve(file);
@@ -74,35 +82,45 @@ program
 
     let processedTransactions = transactions;
 
-    // Ticker resolution
-    if (options.yahoo || options.tickerFile) {
-      console.log('Resolving tickers...');
+    // resolver stacking
+    const resolvers = [];
 
-      let resolver;
-      if (options.tickerFile) {
-        resolver = new FileTickerResolver(path.resolve(options.tickerFile));
-      } else if (options.yahoo) {
-        resolver = new YahooTickerResolver();
+    // 1. File Resolver (Highest priority if provided)
+    if (options.tickerFile) {
+      resolvers.push(new FileTickerResolver(path.resolve(options.tickerFile)));
+    }
+
+    // 2. Yahoo ISIN Resolver (High accuracy)
+    if (options.yahoo !== false || options.yahooIsin) {
+      resolvers.push(new YahooISINResolver());
+    }
+
+    // 3. Yahoo Name Resolver (Fallback)
+    if (options.yahoo !== false || options.yahooName) {
+      resolvers.push(new YahooNameResolver());
+    }
+
+    if (resolvers.length > 0) {
+      console.log(
+        `Resolving tickers using: ${resolvers.map((r) => r.name).join(', ')}...`
+      );
+
+      let cache;
+      if (options.cache !== false) {
+        cache = new LocalFileTickerCache(path.resolve(options.cache));
       }
 
-      if (resolver) {
-        let cache;
-        if (options.cache !== false) {
-          cache = new LocalFileTickerCache(path.resolve(options.cache));
-        }
+      processedTransactions = await enrichTransactions(transactions, {
+        resolvers,
+        cache,
+      });
 
-        processedTransactions = await enrichTransactions(transactions, {
-          resolver,
-          cache,
-        });
-
-        const resolvedCount = processedTransactions.filter(
-          (t) => t.ticker
-        ).length;
-        console.log(
-          `Resolved tickers for ${resolvedCount}/${processedTransactions.length} transactions.`
-        );
-      }
+      const resolvedCount = processedTransactions.filter(
+        (t) => t.ticker
+      ).length;
+      console.log(
+        `Resolved tickers for ${resolvedCount}/${processedTransactions.length} transactions.`
+      );
     }
 
     let result;

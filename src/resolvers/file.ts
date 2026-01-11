@@ -13,6 +13,7 @@ export interface FileResolverOptions {
 }
 
 export class FileTickerResolver implements TickerResolver {
+  name = 'File Resolver';
   private mappings: Map<string, string> = new Map();
 
   constructor(filePath: string) {
