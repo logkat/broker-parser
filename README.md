@@ -180,7 +180,7 @@ const myResolver = {
 
 // 2. Enrich
 const enriched = await enrichTransactions(parsedTransactions, {
-  resolver: myResolver,
+  resolvers: [myResolver],
 });
 
 // 3. Export
