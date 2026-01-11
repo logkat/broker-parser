@@ -28,7 +28,6 @@ We love support for new brokers! To add one:
     Create a new file in `src/parsers/` (e.g., `src/parsers/mybroker.ts`) implementing the `BrokerParser` interface.
 
 2.  ** Implement Logic**:
-
     - `name`: Unique name of the broker.
     - `canParse(row)`: A function returning `true` if this row belongs to this broker. Be specific (check unique headers).
     - `parse(row)`: Map the CSV row to the `ParsedTransaction` interface.

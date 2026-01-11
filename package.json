@@ -41,7 +41,9 @@
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "publishConfig": {
     "access": "public",
@@ -53,12 +55,14 @@
     "@types/papaparse": "^5.5.2",
     "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^9.0.0",
+    "prettier": "^3.4.2",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "1.6.1"
   },
   "dependencies": {
     "commander": "^14.0.2",
-    "papaparse": "^5.5.3"
+    "papaparse": "^5.5.3",
+    "yahoo-finance2": "^3.11.2"
   }
 }

@@ -39,15 +39,17 @@ pnpm add @logkat/broker-parser
 
 ### CLI Usage
 
-You can also use the library directly from your terminal to convert broker CSVs to other formats (e.g. Yahoo Finance).
+You can also use the library directly from your terminal to convert broker CSVs to other formats (e.g. Yahoo Finance) and automatically resolve tickers.
 
 ```bash
-# Run without installing
-npx @logkat/broker-parser export input.csv -o output.csv
+# Basic export
+broker-parser export input.csv -o output.csv
 
-# Or install globally
-npm install -g @logkat/broker-parser
-broker-parser export my_transactions.csv --exporter yahoo --output yahoo_import.csv
+# Export with automatic Yahoo Finance ticker resolution and caching
+broker-parser export input.csv --yahoo --cache .tickers.json
+
+# Use a local mapping file for tickers (supports JSON and CSV)
+broker-parser export input.csv --ticker-file my-tickers.json
 ```
 
 ## Usage
@@ -57,25 +59,40 @@ broker-parser export my_transactions.csv --exporter yahoo --output yahoo_import.
 ### Parsing a Single Transaction
 
 ```typescript
-import { parseTransaction } from "@logkat/broker-parser";
+import { parseTransaction } from '@logkat/broker-parser';
 
 const row = {
-  "Typ av transaktion": "Köp",
-  "Värdepapper/beskrivning": "Apple Inc",
-  Antal: "10",
-  Kurs: "150",
-  Belopp: "-1500",
-  Transaktionsvaluta: "USD",
-  // ... other broker specific fields
+  'Typ av transaktion': 'Köp',
+  'Värdepapper/beskrivning': 'Apple Inc',
+  Antal: '10',
+  Kurs: '150',
+  Belopp: '-1500',
+  Transaktionsvaluta: 'USD',
 };
 
 const transaction = parseTransaction(row);
+```
 
-if (transaction) {
-  console.log(transaction.type); // 'BUY'
-  console.log(transaction.quantity); // 10
-  console.log(transaction.symbol); // 'Apple Inc'
-}
+### Automatic Ticker Resolution
+
+The library provides built-in resolvers for Yahoo Finance and local files.
+
+```typescript
+import {
+  enrichTransactions,
+  YahooTickerResolver,
+  LocalFileTickerCache,
+} from '@logkat/broker-parser';
+
+// 1. Setup resolver and optional persistent cache
+const resolver = new YahooTickerResolver();
+const cache = new LocalFileTickerCache('./ticker-cache.json');
+
+// 2. Enrich your parsed transactions
+const enriched = await enrichTransactions(parsedTransactions, {
+  resolver,
+  cache,
+});
 ```
 
 ### Auto-Detecting Broker Format
@@ -84,7 +101,7 @@ The library automatically detects the format based on unique headers (e.g., "Typ
 
 ```typescript
 // Force Avanza parser
-const txn = parseTransaction(row, "Avanza");
+const txn = parseTransaction(row, 'Avanza');
 ```
 
 ### Identifying Accounts
@@ -92,7 +109,7 @@ const txn = parseTransaction(row, "Avanza");
 If you are parsing a large CSV with multiple accounts, you can extract unique account identifiers:
 
 ```typescript
-import { identifyAccounts } from "@logkat/broker-parser";
+import { identifyAccounts } from '@logkat/broker-parser';
 
 const accounts = identifyAccounts(allRows);
 // Returns: [{ id: '12345', name: 'My ISK', count: 50 }, ...]
@@ -103,7 +120,7 @@ const accounts = identifyAccounts(allRows);
 You can export normalized transactions to various formats (e.g., for importing into other tools).
 
 ```typescript
-import { YahooFinanceExporter } from "@logkat/broker-parser";
+import { YahooFinanceExporter } from '@logkat/broker-parser';
 
 // Convert transactions to Yahoo Finance CSV
 const result = YahooFinanceExporter.export(parsedTransactions);
@@ -113,26 +130,40 @@ console.log(result.content); // CSV string
 ### Enriching Data (Tickers)
 
 Brokers outputs (Avanza/Nordnet) often lack the actual Ticker Symbol required by Yahoo Finance (they provide ISIN or Name instead).
-To fix this, you can use `enrichTransactions` with your own resolver logic (e.g., using `yahoo-finance2`).
+To fix this, you can use `enrichTransactions` with a resolver.
 
 ```typescript
 import {
   enrichTransactions,
   YahooFinanceExporter,
-} from "@logkat/broker-parser";
+} from '@logkat/broker-parser';
 
-// Your custom resolver (could check a DB or call an API)
-const myResolver = async (isin: string, name: string) => {
-  if (isin === "US0378331005") return "AAPL";
-  // ... call external API ...
-  return null;
+// 1. Define or use a built-in resolver
+const myResolver = {
+  resolve: async (isin: string, symbol: string) => {
+    if (isin === 'US0378331005') return { ticker: 'AAPL' };
+    return { ticker: null };
+  },
 };
 
-// 1. Parse
 // 2. Enrich
-const enriched = await enrichTransactions(parsedTransactions, myResolver);
+const enriched = await enrichTransactions(parsedTransactions, {
+  resolver: myResolver,
+});
+
 // 3. Export
 const csv = YahooFinanceExporter.export(enriched);
+```
+
+#### Custom Caching
+
+The library provides a `TickerCache` interface. You can implement your own (e.g., using Redis or a Database) to persist resolutions.
+
+```typescript
+interface TickerCache {
+  get(key: string): Promise<TickerResolution | undefined>;
+  set(key: string, value: TickerResolution): Promise<void>;
+}
 ```
 
 ## API Reference
@@ -184,17 +215,17 @@ We welcome contributions! To add support for a new broker:
     Create a new file (e.g., `src/parsers/mybroker.ts`) implementing the `BrokerParser` interface.
 
     ```typescript
-    import { BrokerParser } from "./types";
-    import { parseNumber, normalizeType } from "./utils";
+    import { BrokerParser } from './types';
+    import { parseNumber, normalizeType } from './utils';
 
     export const MyBrokerParser: BrokerParser = {
-      name: "MyBroker",
-      canParse: (row) => !!(row["UniqueHeader"] && row["AnotherHeader"]),
+      name: 'MyBroker',
+      canParse: (row) => !!(row['UniqueHeader'] && row['AnotherHeader']),
       parse: (row) => {
         // ... parsing logic mapping to ParsedTransaction
         return {
-          date: new Date(row["Date"]),
-          type: normalizeType(row["Type"]),
+          date: new Date(row['Date']),
+          type: normalizeType(row['Type']),
           // ...
         };
       },

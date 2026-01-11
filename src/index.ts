@@ -11,69 +11,72 @@ import { YahooFinanceExporter } from './exporters/yahoo';
 export * from './exporters/types';
 export { YahooFinanceExporter };
 export * from './enricher';
+export * from './cache';
+export * from './resolvers/yahoo';
+export * from './resolvers/file';
 
 export function getParsers(): Record<string, BrokerParser> {
-    return {
-        Avanza: AvanzaParser,
-        Nordnet: NordnetParser,
-    };
+  return {
+    Avanza: AvanzaParser,
+    Nordnet: NordnetParser,
+  };
 }
 
 export function parseTransaction(
-    row: Record<string, string>,
-    format: BrokerFormat='Auto'
-): ParsedTransaction|null {
-    let parser: BrokerParser|undefined;
+  row: Record<string, string>,
+  format: BrokerFormat = 'Auto'
+): ParsedTransaction | null {
+  let parser: BrokerParser | undefined;
 
-    const parsers=getParsers();
+  const parsers = getParsers();
 
-    if (format==='Auto') {
-        // Find first parser that can parse the row
-        const found=Object.values(parsers).find(p => p.canParse(row));
-        if (found) parser=found;
-    } else {
-        // Direct lookup
-        parser=parsers[format];
+  if (format === 'Auto') {
+    // Find first parser that can parse the row
+    const found = Object.values(parsers).find((p) => p.canParse(row));
+    if (found) parser = found;
+  } else {
+    // Direct lookup
+    parser = parsers[format];
+  }
+
+  if (parser && parser.canParse(row)) {
+    const t = parser.parse(row);
+    if (t && t.symbol && t.date && !isNaN(t.date.getTime())) {
+      return t;
     }
+  }
 
-    if (parser&&parser.canParse(row)) {
-        const t=parser.parse(row);
-        if (t&&t.symbol&&t.date&&!isNaN(t.date.getTime())) {
-            return t;
-        }
-    }
+  // Fallback / legacy check if Auto failed or specific parser failed (though unlikely if canParse checks keys)
+  if (format === 'Auto' && !parser) {
+    // Try generic best effort if any new formats appear, but for now return null
+  }
 
-    // Fallback / legacy check if Auto failed or specific parser failed (though unlikely if canParse checks keys)
-    if (format==='Auto'&&!parser) {
-        // Try generic best effort if any new formats appear, but for now return null
-    }
-
-    return null;
+  return null;
 }
 
 export function identifyAccounts(
-    data: Record<string, string>[]
+  data: Record<string, string>[]
 ): { id: string; name: string; count: number }[] {
-    const accounts=new Map<
-        string,
-        { id: string; name: string; count: number }
-    >();
+  const accounts = new Map<
+    string,
+    { id: string; name: string; count: number }
+  >();
 
-    data.forEach((row) => {
-        const t=parseTransaction(row);
-        if (t&&t.accountId) {
-            const existing=accounts.get(t.accountId);
-            if (existing) {
-                existing.count++;
-            } else {
-                accounts.set(t.accountId, {
-                    id: t.accountId,
-                    name: t.accountId,
-                    count: 1,
-                });
-            }
-        }
-    });
+  data.forEach((row) => {
+    const t = parseTransaction(row);
+    if (t && t.accountId) {
+      const existing = accounts.get(t.accountId);
+      if (existing) {
+        existing.count++;
+      } else {
+        accounts.set(t.accountId, {
+          id: t.accountId,
+          name: t.accountId,
+          count: 1,
+        });
+      }
+    }
+  });
 
-    return Array.from(accounts.values());
+  return Array.from(accounts.values());
 }
