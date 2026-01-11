@@ -57,39 +57,39 @@ program
   .option('--no-yahoo', 'Disable automatic Yahoo Finance resolution')
   .option('--no-cache', 'Disable caching')
   .action(async (file, options) => {
-    const filePath = path.resolve(file);
+    const filePath=path.resolve(file);
     if (!fs.existsSync(filePath)) {
       console.error(`Error: File not found at ${filePath}`);
       process.exit(1);
     }
 
-    const csvData = fs.readFileSync(filePath, 'utf8');
-    const parsedCsv = Papa.parse(csvData, {
+    const csvData=fs.readFileSync(filePath, 'utf8');
+    const parsedCsv=Papa.parse(csvData, {
       header: true,
       skipEmptyLines: true,
     });
 
-    if (parsedCsv.errors.length > 0) {
+    if (parsedCsv.errors.length>0) {
       console.warn('Warning: Some errors occurred during CSV parsing:');
       console.warn(parsedCsv.errors);
     }
 
-    const data = parsedCsv.data as Record<string, string>[];
-    const transactions = data
+    const data=parsedCsv.data as Record<string, string>[];
+    const transactions=data
       .map((row) => parseTransaction(row, options.format as BrokerFormat))
-      .filter((t): t is ParsedTransaction => t !== null);
+      .filter((t): t is ParsedTransaction => t!==null);
 
-    if (transactions.length === 0) {
+    if (transactions.length===0) {
       console.error('Error: No transactions could be parsed from the file.');
       process.exit(1);
     }
 
     console.log(`Successfully parsed ${transactions.length} transactions.`);
 
-    let processedTransactions = transactions;
+    let processedTransactions=transactions;
 
     // resolver stacking
-    const resolvers = [];
+    const resolvers=[];
 
     // 1. File Resolver (Highest priority if provided)
     if (options.tickerFile) {
@@ -97,31 +97,31 @@ program
     }
 
     // 2. Yahoo ISIN Resolver (High accuracy)
-    if (options.yahoo !== false || options.yahooIsin) {
+    if (options.yahoo!==false||options.yahooIsin) {
       resolvers.push(new YahooISINResolver());
     }
 
     // 3. Yahoo Name Resolver (Fallback)
-    if (options.yahoo !== false || options.yahooName) {
+    if (options.yahoo!==false||options.yahooName) {
       resolvers.push(new YahooNameResolver());
     }
 
-    if (resolvers.length > 0) {
+    if (resolvers.length>0) {
       console.log(
         `Resolving tickers using: ${resolvers.map((r) => r.name).join(', ')}...`
       );
 
       let cache;
-      if (options.cache !== false) {
-        cache = new LocalFileTickerCache(path.resolve(options.cache));
+      if (options.cache!==false) {
+        cache=new LocalFileTickerCache(path.resolve(options.cache));
       }
 
-      processedTransactions = await enrichTransactions(transactions, {
+      processedTransactions=await enrichTransactions(transactions, {
         resolvers,
         cache,
       });
 
-      const resolvedCount = processedTransactions.filter(
+      const resolvedCount=processedTransactions.filter(
         (t) => t.ticker
       ).length;
       console.log(
@@ -130,14 +130,14 @@ program
     }
 
     let result;
-    if (options.exporter === 'yahoo') {
-      result = YahooFinanceExporter.export(processedTransactions);
+    if (options.exporter==='yahoo') {
+      result=YahooFinanceExporter.export(processedTransactions);
     } else {
       console.error(`Error: Unknown exporter "${options.exporter}"`);
       process.exit(1);
     }
 
-    const outputPath = options.output || path.resolve(result.filename);
+    const outputPath=options.output||path.resolve(result.filename);
     fs.writeFileSync(outputPath, result.content);
     console.log(`Success! Exported to ${outputPath}`);
   });
