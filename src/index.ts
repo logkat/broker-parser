@@ -7,6 +7,10 @@ import { parseNumber, normalizeType } from './parsers/utils';
 export type { ParsedTransaction, BrokerParser, BrokerFormat };
 export { parseNumber, normalizeType };
 
+import { YahooFinanceExporter } from './exporters/yahoo';
+export * from './exporters/types';
+export { YahooFinanceExporter };
+
 export function getParsers(): Record<string, BrokerParser> {
     return {
         Avanza: AvanzaParser,
