@@ -37,6 +37,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "watch": "tsc -w",
     "type-check": "tsc --noEmit",
     "test": "vitest",
