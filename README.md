@@ -9,6 +9,7 @@ A robust, standalone TypeScript library for parsing transaction CSV exports from
 - **Currency Handling**: Extracts account currency, native currency, and exchange rates.
 - **ISIN Extraction**: Reliably finds ISIN codes for accurate instrument identification.
 - **Export Support**: Convert parsed transactions into formats like Yahoo Finance CSV.
+- **CLI Support**: Command-line interface for bulk processing and exporting without writing code.
 - **Data Enrichment**: Helper utilities to resolve Tickers (e.g. from ISIN) before export.
 - **Type Safe**: Written in TypeScript with full type definitions.
 
@@ -19,6 +20,8 @@ A robust, standalone TypeScript library for parsing transaction CSV exports from
 - _(More can be added by implementing the `BrokerParser` interface)_
 
 ## Installation
+
+### Library Usage
 
 To install from GitHub Packages, you need to configure your `.npmrc` file:
 
@@ -34,7 +37,22 @@ npm install @logkat/broker-parser
 pnpm add @logkat/broker-parser
 ```
 
+### CLI Usage
+
+You can also use the library directly from your terminal to convert broker CSVs to other formats (e.g. Yahoo Finance).
+
+```bash
+# Run without installing
+npx @logkat/broker-parser export input.csv -o output.csv
+
+# Or install globally
+npm install -g @logkat/broker-parser
+broker-parser export my_transactions.csv --exporter yahoo --output yahoo_import.csv
+```
+
 ## Usage
+
+### Library Usage (TypeScript)
 
 ### Parsing a Single Transaction
 

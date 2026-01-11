@@ -16,7 +16,7 @@ export const YahooFinanceExporter: PortfolioExporter={
         const rows=transactions
             .map((t) => {
                 // We need a Symbol/Ticker. Prefer 'ticker', fallback to 'symbol', fallback to 'isin'
-                let symbol=t.ticker||t.symbol;
+                const symbol=t.ticker||t.symbol;
 
                 // Skip non-trade types?
                 if (t.type!=='BUY'&&t.type!=='SELL') {
