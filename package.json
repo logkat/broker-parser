@@ -1,0 +1,46 @@
+{
+  "name": "@logkat/broker-parser",
+  "version": "0.0.1",
+  "description": "A robust, standalone TypeScript library for parsing transaction CSV exports from various stock brokers.",
+  "keywords": [
+    "broker",
+    "parser",
+    "finance",
+    "stocks",
+    "csv",
+    "avanza",
+    "nordnet"
+  ],
+  "author": "Logkat Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logkat/broker-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/logkat/broker-parser/issues"
+  },
+  "homepage": "https://github.com/logkat/broker-parser#readme",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "1.6.1"
+  }
+}

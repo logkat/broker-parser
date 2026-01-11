@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Dist
+dist
+lib-dist
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+junit.xml
+__snapshots__
+.nyc_output
+
+# Editor/OS
+.DS_Store
+.vscode
+.idea
+*.swp
+*.tsbuildinfo
+
+# Turborepo
+.turbo
