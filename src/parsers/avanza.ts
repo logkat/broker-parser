@@ -44,7 +44,7 @@ export const AvanzaParser: BrokerParser = {
     return {
       date,
       type,
-      symbol: row['Värdepapper/beskrivning'] || row['Värdepapper'],
+      name: row['Värdepapper/beskrivning'] || row['Värdepapper'],
       quantity: Math.abs(qty),
       price: price,
       currency: accountCurrency,

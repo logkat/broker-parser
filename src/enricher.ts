@@ -7,7 +7,7 @@ export type TickerResolution = {
 
 export interface TickerResolver {
   name: string;
-  resolve(isin: string, symbol: string): Promise<TickerResolution>;
+  resolve(isin: string, name: string): Promise<TickerResolution>;
 }
 
 export interface TickerCache {
@@ -51,7 +51,7 @@ export async function enrichTransactions(
       continue;
     }
 
-    const key = t.isin || t.symbol;
+    const key = t.isin || t.name;
     if (!key) {
       enriched.push(t);
       continue;
@@ -68,7 +68,7 @@ export async function enrichTransactions(
     if (!resolution || !resolution.ticker) {
       for (const resolver of resolvers) {
         try {
-          const res = await resolver.resolve(t.isin || '', t.symbol);
+          const res = await resolver.resolve(t.isin || '', t.name);
           if (res && res.ticker) {
             resolution = res;
             if (stopOnFirstMatch) break;

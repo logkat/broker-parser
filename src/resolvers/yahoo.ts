@@ -1,23 +1,43 @@
 import YahooFinance from 'yahoo-finance2';
 import { TickerResolver, TickerResolution } from '../enricher';
 
+// Yahoo Finance API types (simplified)
+interface YahooQuote {
+  symbol: string;
+  quoteType?: string;
+  exchange?: string;
+  currency?: string;
+  longname?: string;
+  shortname?: string;
+}
+
+interface YahooSearchResult {
+  quotes: YahooQuote[];
+}
+
+interface YahooQuoteResult {
+  currency?: string;
+}
+
+interface YahooQuoteSummaryResult {
+  price?: { currency?: string };
+  summaryDetail?: { currency?: string };
+}
+
 // Create a single instance to be used across resolvers
-const yahooFinance = new YahooFinance();
-try {
-  (yahooFinance as any).suppressNotices(['yahooSurvey']);
-} catch (e) {}
+const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
 
 abstract class YahooBaseResolver {
   protected yahooFinance = yahooFinance;
 
   protected async enrichCurrency(ticker: string): Promise<string | null> {
     try {
-      const quote: any = await this.yahooFinance.quote(ticker);
+      const quote = (await this.yahooFinance.quote(ticker)) as YahooQuoteResult;
       let currency = quote.currency || null;
       if (!currency) {
-        const summary: any = await this.yahooFinance.quoteSummary(ticker, {
+        const summary = (await this.yahooFinance.quoteSummary(ticker, {
           modules: ['summaryDetail', 'price'],
-        });
+        })) as YahooQuoteSummaryResult;
         currency =
           summary.price?.currency || summary.summaryDetail?.currency || null;
       }
@@ -37,14 +57,16 @@ export class YahooISINResolver
 {
   name = 'Yahoo ISIN';
 
-  async resolve(isin: string, symbol: string): Promise<TickerResolution> {
+  async resolve(isin: string, name: string): Promise<TickerResolution> {
     if (!isin) return { ticker: null };
 
     try {
-      const results: any = await this.yahooFinance.search(isin);
+      const results = (await this.yahooFinance.search(
+        isin
+      )) as YahooSearchResult;
       if (results && results.quotes && results.quotes.length > 0) {
         const equityMatch = results.quotes.find(
-          (q: any) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF'
+          (q) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF'
         );
         const match = equityMatch || results.quotes[0];
         const ticker = match.symbol;
@@ -57,7 +79,7 @@ export class YahooISINResolver
         return { ticker, currency };
       }
     } catch (error) {
-      console.warn(`Yahoo ISIN failed for ${symbol}:`, error);
+      console.warn(`Yahoo ISIN failed for ${name}:`, error);
     }
 
     return { ticker: null };
@@ -73,15 +95,15 @@ export class YahooNameResolver
 {
   name = 'Yahoo Name';
 
-  async resolve(isin: string, symbol: string): Promise<TickerResolution> {
-    let cleanName = symbol;
+  async resolve(isin: string, name: string): Promise<TickerResolution> {
+    let cleanName = name;
     let preferredClass: string | null = null;
 
     const classMatch =
-      symbol.match(/\s+Class\s+([A-Z])$/i) || symbol.match(/\s+([A-Z])$/);
+      name.match(/\s+Class\s+([A-Z])$/i) || name.match(/\s+([A-Z])$/);
     if (classMatch) {
       preferredClass = classMatch[1].toUpperCase();
-      cleanName = symbol.substring(0, classMatch.index).trim();
+      cleanName = name.substring(0, classMatch.index).trim();
     }
 
     if (cleanName.toLowerCase() === 'alphabet') {
@@ -89,10 +111,12 @@ export class YahooNameResolver
     }
 
     try {
-      const results: any = await this.yahooFinance.search(cleanName);
+      const results = (await this.yahooFinance.search(
+        cleanName
+      )) as YahooSearchResult;
       if (results && results.quotes && results.quotes.length > 0) {
         const candidates = results.quotes.filter(
-          (q: any) =>
+          (q) =>
             (q.exchange === 'NMS' ||
               q.exchange === 'NYQ' ||
               q.exchange === 'NGM') &&
@@ -106,13 +130,13 @@ export class YahooNameResolver
           // 1. Special case: Alphabet
           if (cleanName.toLowerCase().includes('alphabet')) {
             if (preferredClass === 'C') {
-              const found = candidates.find((q: any) => q.symbol === 'GOOG');
+              const found = candidates.find((q) => q.symbol === 'GOOG');
               if (found) {
                 resolvedTicker = found.symbol;
                 resolvedCurrency = found.currency || 'USD';
               }
             } else if (preferredClass === 'A') {
-              const found = candidates.find((q: any) => q.symbol === 'GOOGL');
+              const found = candidates.find((q) => q.symbol === 'GOOGL');
               if (found) {
                 resolvedTicker = found.symbol;
                 resolvedCurrency = found.currency || 'USD';
@@ -123,13 +147,13 @@ export class YahooNameResolver
           // 2. Exact match starting with name
           if (!resolvedTicker) {
             const matches = candidates
-              .filter((q: any) =>
+              .filter((q) =>
                 (q.longname || q.shortname || '')
                   .toLowerCase()
                   .startsWith(cleanName.toLowerCase())
               )
               .sort(
-                (a: any, b: any) =>
+                (a, b) =>
                   (a.longname || a.shortname || '').length -
                   (b.longname || b.shortname || '').length
               );
@@ -150,7 +174,7 @@ export class YahooNameResolver
         // 4. Any equity match if no candidates matched the preferred exchanges
         if (!resolvedTicker) {
           const anyEquity = results.quotes.find(
-            (q: any) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF'
+            (q) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF'
           );
           if (anyEquity) {
             resolvedTicker = anyEquity.symbol;
@@ -171,7 +195,7 @@ export class YahooNameResolver
         return { ticker: resolvedTicker, currency: resolvedCurrency };
       }
     } catch (error) {
-      console.warn(`Yahoo Name failed for ${symbol}:`, error);
+      console.warn(`Yahoo Name failed for ${name}:`, error);
     }
 
     return { ticker: null };
@@ -189,9 +213,9 @@ export class YahooFullResolver
   private isinResolver = new YahooISINResolver();
   private nameResolver = new YahooNameResolver();
 
-  async resolve(isin: string, symbol: string): Promise<TickerResolution> {
-    const isinRes = await this.isinResolver.resolve(isin, symbol);
+  async resolve(isin: string, name: string): Promise<TickerResolution> {
+    const isinRes = await this.isinResolver.resolve(isin, name);
     if (isinRes.ticker) return isinRes;
-    return this.nameResolver.resolve(isin, symbol);
+    return this.nameResolver.resolve(isin, name);
   }
 }

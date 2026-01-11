@@ -8,7 +8,7 @@ describe('YahooFinanceExporter', () => {
       {
         date: new Date('2023-01-01'),
         type: 'BUY',
-        symbol: 'Apple Inc',
+        name: 'Apple Inc',
         ticker: 'AAPL',
         quantity: 10,
         price: 150.0,
@@ -20,7 +20,7 @@ describe('YahooFinanceExporter', () => {
       {
         date: new Date('2023-02-01'),
         type: 'SELL',
-        symbol: 'Apple Inc',
+        name: 'Apple Inc',
         ticker: 'AAPL',
         quantity: 5,
         price: 160.0,
@@ -47,12 +47,12 @@ describe('YahooFinanceExporter', () => {
     expect(lines[2]).toContain('-5');
   });
 
-  it('should fallback to symbol if ticker is missing', () => {
+  it('should fallback to name if ticker is missing', () => {
     const t = [
       {
         date: new Date('2023-01-01'),
         type: 'BUY',
-        symbol: 'Unknown Stock',
+        name: 'Unknown Stock',
         quantity: 1,
         price: 100,
         fee: 0,

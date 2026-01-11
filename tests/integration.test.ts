@@ -17,7 +17,7 @@ describe('Integration Tests with Mocks', () => {
 
     expect(transactions.length).toBeGreaterThan(0);
     expect(transactions[0]?.originalSource).toBe('Avanza');
-    expect(transactions[0]?.symbol).toBe('Meta Platforms A');
+    expect(transactions[0]?.name).toBe('Meta Platforms A');
   });
 
   it('should parse the Nordnet mock CSV correctly', () => {
@@ -30,7 +30,7 @@ describe('Integration Tests with Mocks', () => {
 
     expect(transactions.length).toBeGreaterThan(0);
     expect(transactions[0]?.originalSource).toBe('Nordnet');
-    expect(transactions[0]?.symbol).toBe('Netflix');
+    expect(transactions[0]?.name).toBe('Netflix');
   });
 
   it('should auto-detect formats from mock files', () => {

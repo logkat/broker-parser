@@ -30,7 +30,7 @@ describe('FileTickerResolver', () => {
   it('should resolve tickers from a CSV file', async () => {
     fs.writeFileSync(
       tempCsv,
-      'isin,symbol,ticker\nUS0378331005,Apple,AAPL\n,Microsoft,MSFT'
+      'isin,name,ticker\nUS0378331005,Apple,AAPL\n,Microsoft,MSFT'
     );
 
     const resolver = new FileTickerResolver(tempCsv);

@@ -6,9 +6,9 @@ import { TickerResolver, TickerResolution } from '../enricher';
 export interface FileResolverOptions {
   filePath: string;
   /**
-   * Map of ISIN or Symbol to Ticker
+   * Map of ISIN or Name to Ticker
    * For JSON, it should be an object or an array of objects.
-   * For CSV, it should have headers like 'isin', 'symbol', 'ticker'.
+   * For CSV, it should have headers like 'isin', 'name', 'ticker'.
    */
 }
 
@@ -34,7 +34,7 @@ export class FileTickerResolver implements TickerResolver {
         const data = JSON.parse(content);
         if (Array.isArray(data)) {
           data.forEach((item: any) => {
-            const key = item.isin || item.symbol;
+            const key = item.isin || item.name;
             if (key && item.ticker) this.mappings.set(key, item.ticker);
           });
         } else {
@@ -52,7 +52,7 @@ export class FileTickerResolver implements TickerResolver {
           skipEmptyLines: true,
         });
         (results.data as any[]).forEach((row) => {
-          const key = row.isin || row.symbol || row.ISIN || row.Symbol;
+          const key = row.isin || row.name || row.ISIN;
           const ticker = row.ticker || row.Ticker;
           if (key && ticker) this.mappings.set(key, ticker);
         });
@@ -62,8 +62,8 @@ export class FileTickerResolver implements TickerResolver {
     }
   }
 
-  async resolve(isin: string, symbol: string): Promise<TickerResolution> {
-    const ticker = this.mappings.get(isin) || this.mappings.get(symbol) || null;
+  async resolve(isin: string, name: string): Promise<TickerResolution> {
+    const ticker = this.mappings.get(isin) || this.mappings.get(name) || null;
     return { ticker };
   }
 }

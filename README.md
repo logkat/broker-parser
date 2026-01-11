@@ -77,6 +77,36 @@ const transaction = parseTransaction(row);
 
 The library and CLI support "stacked" resolvers. You can prioritize local data and then fall back to various cloud providers.
 
+#### Ticker Mapping Formats
+
+When using `--ticker-file` or `FileTickerResolver`, you can use **JSON** or **CSV** files.
+
+**JSON Format (Object or Array):**
+
+```json
+// Simple object (Key can be ISIN or Security Name)
+{
+  "US0378331005": "AAPL",
+  "Meta Platforms A": "META"
+}
+
+// Or an array of objects
+[
+  { "isin": "US0378331005", "ticker": "AAPL" },
+  { "name": "Microsoft", "ticker": "MSFT" }
+]
+```
+
+**CSV Format:**
+
+```csv
+isin,name,ticker
+US0378331005,,AAPL
+,Microsoft,MSFT
+```
+
+#### Library Example
+
 ```typescript
 import {
   enrichTransactions,
@@ -141,7 +171,8 @@ import {
 
 // 1. Define or use a built-in resolver
 const myResolver = {
-  resolve: async (isin: string, symbol: string) => {
+  name: 'My Custom Resolver',
+  resolve: async (isin: string, name: string) => {
     if (isin === 'US0378331005') return { ticker: 'AAPL' };
     return { ticker: null };
   },
@@ -181,7 +212,8 @@ Scans a dataset to find all unique account IDs present in the file.
 
 - `date`: Date object
 - `type`: 'BUY' | 'SELL' | 'DIVIDEND' | 'DEPOSIT' | 'WITHDRAW' | 'INTEREST' | 'TAX' | 'OTHER'
-- `symbol`: string
+- `name`: string (Security name, e.g. "Apple Inc")
+- `ticker`: string (Ticker symbol, e.g. "AAPL")
 - `quantity`: number
 - `price`: number
 - `total`: number
@@ -207,6 +239,16 @@ If you are moving from an internal implementation to this library:
 
 3.  **Dependencies**:
     This library has zero runtime dependencies (except standard JS/TS features).
+
+## Coding Guidelines
+
+This project follows strict naming conventions for financial terminology. See [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) for details.
+
+**Key terminology:**
+
+- `ticker`: Stock ticker symbol (e.g., "AAPL", "META")
+- `name`: Company/security name (e.g., "Apple Inc")
+- `symbol`: **DEPRECATED** - do not use; treat as `ticker` if encountered in external APIs
 
 ## Adding a New Broker
 

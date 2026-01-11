@@ -34,7 +34,7 @@ export const NordnetParser: BrokerParser = {
     return {
       date,
       type,
-      symbol: row['Instrument'] || row['Värdepapper'],
+      name: row['Instrument'] || row['Värdepapper'],
       quantity: Math.abs(qty),
       price: price, // This is usually native price
       currency: accountCurrency,

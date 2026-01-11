@@ -1,7 +1,7 @@
 export type ParsedTransaction = {
   date: Date;
   type: string; // "BUY", "SELL"
-  symbol: string;
+  name: string;
   quantity: number;
   price: number;
   currency: string;

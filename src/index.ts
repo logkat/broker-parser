@@ -41,7 +41,7 @@ export function parseTransaction(
 
   if (parser && parser.canParse(row)) {
     const t = parser.parse(row);
-    if (t && t.symbol && t.date && !isNaN(t.date.getTime())) {
+    if (t && t.name && t.date && !isNaN(t.date.getTime())) {
       return t;
     }
   }

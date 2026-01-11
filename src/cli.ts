@@ -11,6 +11,7 @@ import {
   YahooNameResolver,
   FileTickerResolver,
   LocalFileTickerCache,
+  ParsedTransaction,
 } from './index';
 import { BrokerFormat } from './parsers/types';
 
@@ -71,7 +72,7 @@ program
     const data = parsedCsv.data as Record<string, string>[];
     const transactions = data
       .map((row) => parseTransaction(row, options.format as BrokerFormat))
-      .filter((t): t is any => t !== null);
+      .filter((t): t is ParsedTransaction => t !== null);
 
     if (transactions.length === 0) {
       console.error('Error: No transactions could be parsed from the file.');

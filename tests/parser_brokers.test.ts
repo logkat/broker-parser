@@ -22,7 +22,7 @@ describe('Broker Parsers', () => {
       const result = parseTransaction(row, 'Avanza');
 
       expect(result).not.toBeNull();
-      expect(result?.symbol).toBe('Meta Platforms A');
+      expect(result?.name).toBe('Meta Platforms A');
       expect(result?.type).toBe('BUY');
       expect(result?.quantity).toBe(1);
       expect(result?.price).toBe(666.89);
@@ -110,7 +110,7 @@ describe('Broker Parsers', () => {
         text: 'Some text',
       };
       const result = parseTransaction(row, 'Avanza');
-      expect(result?.symbol).toBe('Legacy Stock');
+      expect(result?.name).toBe('Legacy Stock');
     });
   });
 
@@ -126,7 +126,7 @@ describe('Broker Parsers', () => {
         Transaktionsdag: '2023-01-01', // Explicit date
       };
       const result = parseTransaction(row, 'Nordnet');
-      expect(result?.symbol).toBe('Legacy Nordnet');
+      expect(result?.name).toBe('Legacy Nordnet');
       expect(result?.fee).toBe(10);
     });
 
@@ -156,7 +156,7 @@ describe('Broker Parsers', () => {
       const result = parseTransaction(row, 'Nordnet');
 
       expect(result).not.toBeNull();
-      expect(result?.symbol).toBe('Netflix');
+      expect(result?.name).toBe('Netflix');
       expect(result?.type).toBe('BUY');
       expect(result?.quantity).toBe(50);
       expect(result?.price).toBe(102.98); // Native price
